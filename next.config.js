@@ -1,27 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Disable font preloading to prevent unused preload warnings
-  // optimizeFonts: false,
+  // Add security headers if needed
+  // Removed optimizeFonts as it's not recognized in Next.js 15.3.5
 
-  // Add security headers
-  headers: async () => {
-    return [
-      {
-        source: '/(.*)',
-        headers: [
-          {
-            key: 'Cross-Origin-Opener-Policy',
-            value: 'same-origin',
-          },
-          // Using a less restrictive value for Cross-Origin-Embedder-Policy
-          {
-            key: 'Cross-Origin-Embedder-Policy',
-            value: 'credentialless',
-          },
-        ],
-      },
-    ];
-  },
+  // Either add at least one header or remove the headers configuration
+  // Removing headers configuration for now
 };
 
 module.exports = nextConfig;

@@ -1,6 +1,7 @@
 # Todo App with Billing
 
-A todo list application with user authentication and subscription billing using Supabase and Stripe.
+A todo list application with user authentication and subscription billing
+using Supabase and Stripe.
 
 ## Features
 
@@ -39,12 +40,14 @@ A todo list application with user authentication and subscription billing using 
    cp .env.example .env
    ```
 3. Update the `.env` file with your Supabase and Stripe credentials
-4. (Optional) Customize the application port by changing the `PORT` environment variable (default is 3000)
+4. (Optional) Customize the application port by changing 
+the `PORT` environment variable (default is 3000)
 
 ### Database Setup
 
 1. Create a new Supabase project
-2. Run the SQL commands in `schema.sql` in the Supabase SQL editor to set up the database schema
+2. Run the SQL commands in `schema.sql` in the Supabase SQL editor
+to set up the database schema
 
 ### Stripe Setup
 
@@ -66,7 +69,8 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:PORT](http://localhost:PORT) with your browser to see the result, where PORT is the value you set in the .env file (default is 3000).
+Open [http://localhost:PORT](http://localhost:PORT) with your browser to see the result,
+where PORT is the value you set in the .env file (default is 3000).
 
 ## Usage
 
