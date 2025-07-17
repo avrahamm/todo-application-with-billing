@@ -46,12 +46,7 @@ export const useTodoStore = create<TodoState>((set, get) => ({
         isLoading: false 
       });
     } catch (error: any) {
-      console.error('Error fetching todos:', {
-        message: error.message,
-        code: error.code,
-        details: error.details,
-        hint: error.hint
-      });
+      console.error('Error fetching todos:', error.message);
       set({ 
         error: error.message || 'Failed to fetch todos', 
         isLoading: false 
@@ -78,12 +73,7 @@ export const useTodoStore = create<TodoState>((set, get) => ({
         isLoading: false 
       });
     } catch (error: any) {
-      console.error('Error adding todo:', {
-        message: error.message,
-        code: error.code,
-        details: error.details,
-        hint: error.hint
-      });
+      console.error('Error adding todo:', error.message);
       set({ 
         error: error.message || 'Failed to add todo', 
         isLoading: false 
@@ -107,12 +97,7 @@ export const useTodoStore = create<TodoState>((set, get) => ({
 
       set({ todos, isLoading: false });
     } catch (error: any) {
-      console.error('Error toggling todo:', {
-        message: error.message,
-        code: error.code,
-        details: error.details,
-        hint: error.hint
-      });
+      console.error('Error toggling todo:', error.message);
       set({ 
         error: error.message || 'Failed to update todo', 
         isLoading: false 
@@ -138,12 +123,7 @@ export const useTodoStore = create<TodoState>((set, get) => ({
         isLoading: false 
       });
     } catch (error: any) {
-      console.error('Error deleting todo:', {
-        message: error.message,
-        code: error.code,
-        details: error.details,
-        hint: error.hint
-      });
+      console.error('Error deleting todo:', error.message);
       set({ 
         error: error.message || 'Failed to delete todo', 
         isLoading: false 

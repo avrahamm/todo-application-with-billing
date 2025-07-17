@@ -4,7 +4,20 @@ import { cookies } from 'next/headers';
 import { stripe, createCheckoutSession, createCustomer } from '@/utils/stripe';
 
 export async function POST(req: NextRequest) {
+  // Add CORS headers
+  if (req.method === 'OPTIONS') {
+    return new NextResponse(null, {
+      status: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      },
+    });
+  }
+
   try {
+    console.log('Creating checkout session...');
     const cookieStore = cookies();
     // Create a server-side Supabase client with appropriate configuration
     const supabase = createClient(
@@ -16,7 +29,10 @@ export async function POST(req: NextRequest) {
             autoRefreshToken: false, // No need to refresh token on server
           },
           global: {
-            headers: { 'x-application-name': 'todo-app-server' },
+            headers: { 
+              'x-application-name': 'todo-app-server',
+              'Accept': 'application/json'
+            },
           },
         }
     );
@@ -33,6 +49,12 @@ export async function POST(req: NextRequest) {
     }
 
     const { priceId, returnUrl } = await req.json();
+
+    console.log('Received request with:', {
+      priceId,
+      returnUrl,
+      origin: req.headers.get('origin')
+    });
 
     if (!priceId) {
       return NextResponse.json(
@@ -66,13 +88,24 @@ export async function POST(req: NextRequest) {
     }
 
     // Create a checkout session
+    // Ensure we have a valid returnUrl
+    const baseUrl = returnUrl || 'http://localhost:3000';
+
     const { url } = await createCheckoutSession(
       customerId,
       priceId,
-      returnUrl || process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+      baseUrl
     );
 
-    return NextResponse.json({ url });
+    console.log('Returning checkout URL to client:', url);
+
+    return NextResponse.json({ url }, {
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      },
+    });
   } catch (error: any) {
     console.error('Error creating checkout session:', {
       message: error.message,
@@ -82,8 +115,15 @@ export async function POST(req: NextRequest) {
       statusCode: error.statusCode
     });
     return NextResponse.json(
-      { error: error.message || 'Failed to create checkout session' },
-      { status: 500 }
+        { error: error.message || 'Failed to create checkout session' },
+        {
+          status: 500,
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+          },
+        }
     );
   }
 }

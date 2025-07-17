@@ -72,6 +72,54 @@ npm run dev
 Open [http://localhost:PORT](http://localhost:PORT) with your browser to see the result,
 where PORT is the value you set in the .env file (default is 3000).
 
+## Troubleshooting
+
+### Empty Subscriptions Table
+
+If you find that the subscriptions table in the Supabase database is empty, which prevents users from being recognized as PRO users, this could be due to:
+
+1. The `customers` table not being defined in the schema.sql file, which is required for the webhook handler to create subscription records.
+2. The webhook handler not receiving events from Stripe, or there being an issue with the webhook handler code.
+
+#### Solution
+
+1. Make sure the `customers` table is defined in the schema.sql file:
+
+```sql
+-- Create customers table
+CREATE TABLE IF NOT EXISTS customers (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  stripe_customer_id TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+```
+
+2. You can use the test API endpoint and HTML page to manually insert a subscription record for a user:
+
+- API endpoint: `/api/test/insert-subscription`
+- HTML page: `/test-subscription.html`
+
+#### How to Test
+
+1. Run the application:
+
+```bash
+npm run dev
+```
+
+2. Open the test page in your browser:
+
+```
+http://localhost:3000/test-subscription.html
+```
+
+3. Enter a user ID and click "Create Test Subscription".
+
+4. Verify that the subscription record is created successfully.
+
+5. Try using the application as the user to verify that they are recognized as a PRO user.
+
 ## Usage
 
 ### Authentication

@@ -19,7 +19,7 @@ export function TodoList() {
         await fetchTodos(user?.id);
 
       } catch (error) {
-        console.error('Error loading todos:', error);
+        console.error('Error loading todos:', error instanceof Error ? error.message : 'Unknown error');
       }
     };
 

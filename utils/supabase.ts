@@ -20,7 +20,10 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   },
   global: {
     fetch: customFetch,
-    headers: { 'x-application-name': 'todo-app' },
+    headers: { 
+      'x-application-name': 'todo-app',
+      'Accept': 'application/json'
+    },
   },
   realtime: {
     timeout: 60000, // Increase timeout for realtime connections

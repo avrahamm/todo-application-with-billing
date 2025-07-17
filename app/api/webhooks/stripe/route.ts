@@ -13,7 +13,10 @@ const supabaseAdmin = createClient(
       autoRefreshToken: false, // No need to refresh token on server
     },
     global: {
-      headers: { 'x-application-name': 'todo-app-webhook' },
+      headers: { 
+        'x-application-name': 'todo-app-webhook',
+        'Accept': 'application/json'
+      },
     },
   }
 );

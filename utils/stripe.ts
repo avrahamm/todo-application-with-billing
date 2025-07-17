@@ -7,6 +7,16 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export async function createCheckoutSession(customerId: string, priceId: string, returnUrl: string) {
   try {
+    // Ensure returnUrl is a valid URL
+    const baseUrl = returnUrl || 'http://localhost:3000';
+
+    console.log('Creating checkout session with:', {
+      customerId,
+      priceId,
+      returnUrl,
+      baseUrl
+    });
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       line_items: [
@@ -17,9 +27,11 @@ export async function createCheckoutSession(customerId: string, priceId: string,
       ],
       mode: 'subscription',
       payment_method_types: ['card'],
-      success_url: `${returnUrl}?success=true`,
-      cancel_url: `${returnUrl}?canceled=true`,
+      success_url: `${baseUrl}?success=true`,
+      cancel_url: `${baseUrl}?canceled=true`,
     });
+
+    console.log('Generated checkout URL:', session.url);
 
     return { sessionId: session.id, url: session.url };
   } catch (error: any) {

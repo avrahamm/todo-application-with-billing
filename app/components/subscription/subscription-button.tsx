@@ -18,6 +18,11 @@ export function SubscriptionButton() {
 
     setIsLoading(true);
     try {
+      console.log('Client-side origin:', {
+        origin: window.location.origin,
+        href: window.location.href,
+        pathname: window.location.pathname
+      });
       const response = await fetch('/api/create-checkout-session', {
         method: 'POST',
         headers: {
@@ -25,19 +30,15 @@ export function SubscriptionButton() {
         },
         body: JSON.stringify({
           priceId: process.env.NEXT_PUBLIC_PRO_PRICE_ID,
-          returnUrl: window.location.origin,
+          returnUrl: window.location.origin || 'http://localhost:3000',
         }),
       });
 
       const { url } = await response.json();
+      console.log('Redirecting to checkout URL:', url);
       window.location.href = url;
     } catch (error: any) {
-      console.error('Error creating checkout session:', {
-        message: error.message,
-        name: error.name,
-        stack: error.stack,
-        cause: error.cause
-      });
+      console.error('Error creating checkout session:', error.message);
     } finally {
       setIsLoading(false);
     }

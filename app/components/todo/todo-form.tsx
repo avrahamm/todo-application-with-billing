@@ -44,12 +44,7 @@ export function TodoForm() {
         setUserTodoCount(prevCount => prevCount + 1);
       }
     } catch (error: any) {
-      console.error('Error adding todo:', {
-        message: error.message,
-        name: error.name,
-        stack: error.stack,
-        cause: error.cause
-      });
+      console.error('Error adding todo:', error.message);
     }
   };
 
