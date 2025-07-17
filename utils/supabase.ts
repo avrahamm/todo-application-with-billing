@@ -80,29 +80,46 @@ export async function getUserTodoCount(userId: string | undefined): Promise<numb
 export async function getUserSubscription(userId: string | undefined): Promise<UserSubscription | null> {
   if (!userId) return null;
 
-  const { data, error } = await supabase
-    .from('subscriptions')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('status', 'active')
-    .single();
+  try {
+    const { data, error } = await supabase
+      .from('subscriptions')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('status', 'active')
+      .single();
 
-  if (error) {
-    console.error('Error getting user subscription:', {
-      message: error.message,
-      code: error.code,
-      details: error.details,
-      hint: error.hint
-    });
+    if (error) {
+      // Check if the error is a "not found" error, which is expected when a user doesn't have a subscription
+      if (error.code === 'PGRST116') {
+        // This is a "not found" error, which is expected for users without subscriptions
+        return null;
+      }
+
+      console.error('Error getting user subscription:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint
+      });
+      return null;
+    }
+
+    return data as UserSubscription;
+  } catch (e) {
+    // Catch any unexpected errors that might occur
+    console.error('Unexpected error in getUserSubscription:', e);
     return null;
   }
-
-  return data as UserSubscription;
 }
 
 export async function isProUser(userId: string | undefined): Promise<boolean> {
   if (!userId) return false;
 
-  const subscription = await getUserSubscription(userId);
-  return !!subscription;
+  try {
+    const subscription = await getUserSubscription(userId);
+    return !!subscription;
+  } catch (e) {
+    console.error('Error in isProUser:', e);
+    return false;
+  }
 }
