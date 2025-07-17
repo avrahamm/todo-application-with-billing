@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/app/context/auth-context';
 import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
@@ -15,16 +15,26 @@ export function SignInForm({ onSuccess, onToggleForm }: SignInFormProps) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const { signIn } = useAuth();
+  const [loginAttempted, setLoginAttempted] = useState(false);
+  const { signIn, user } = useAuth();
+
+  // Effect to handle successful login
+  useEffect(() => {
+    if (user && loginAttempted && onSuccess) {
+      onSuccess();
+    }
+  }, [user, loginAttempted, onSuccess]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setIsLoading(true);
+    setLoginAttempted(false);
 
     try {
       await signIn(email, password);
-      if (onSuccess) onSuccess();
+      setLoginAttempted(true);
+      // onSuccess will be called by the useEffect when user state updates
     } catch (error: any) {
       setError(error.message || 'Failed to sign in');
     } finally {
@@ -35,7 +45,7 @@ export function SignInForm({ onSuccess, onToggleForm }: SignInFormProps) {
   return (
     <div className="w-full max-w-md mx-auto">
       <h2 className="text-2xl font-bold mb-6">Sign In</h2>
-      
+
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label htmlFor="email" className="block text-sm font-medium mb-1">
@@ -49,7 +59,7 @@ export function SignInForm({ onSuccess, onToggleForm }: SignInFormProps) {
             required
           />
         </div>
-        
+
         <div>
           <label htmlFor="password" className="block text-sm font-medium mb-1">
             Password
@@ -62,11 +72,11 @@ export function SignInForm({ onSuccess, onToggleForm }: SignInFormProps) {
             required
           />
         </div>
-        
+
         {error && (
           <div className="text-red-500 text-sm">{error}</div>
         )}
-        
+
         <Button
           type="submit"
           className="w-full"
@@ -76,7 +86,7 @@ export function SignInForm({ onSuccess, onToggleForm }: SignInFormProps) {
           Sign In
         </Button>
       </form>
-      
+
       <div className="mt-4 text-center">
         <p className="text-sm text-foreground/70">
           Don't have an account?{' '}

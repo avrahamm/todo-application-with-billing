@@ -8,7 +8,7 @@ interface TodoState {
   isLoading: boolean;
   error: string | null;
   todoCount: number;
-  fetchTodos: () => Promise<void>;
+  fetchTodos: (userId: string | undefined) => Promise<void>;
   addTodo: (title: string, userId: string | undefined) => Promise<void>;
   toggleTodo: (id: string, completed: boolean) => Promise<void>;
   deleteTodo: (id: string) => Promise<void>;
@@ -21,13 +21,22 @@ export const useTodoStore = create<TodoState>((set, get) => ({
   error: null,
   todoCount: 0,
 
-  fetchTodos: async () => {
+  fetchTodos: async (userId: string | undefined) => {
     set({ isLoading: true, error: null });
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('todos')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('*');
+
+      // Filter by user_id if provided
+      if (userId) {
+        query = query.eq('user_id', userId);
+      } else {
+        // If no user is logged in, only show todos with null user_id (public todos)
+        query = query.is('user_id', null);
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: false });
 
       if (error) throw error;
 

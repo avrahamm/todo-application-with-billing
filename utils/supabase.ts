@@ -3,7 +3,29 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Create a custom fetch implementation with longer timeout
+const customFetch = (url: RequestInfo | URL, options?: RequestInit) => {
+  return fetch(url, {
+    ...options,
+    signal: options?.signal || (typeof AbortController !== 'undefined' ? new AbortController().signal : undefined),
+  });
+};
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+    flowType: 'implicit', // Use implicit flow for better browser compatibility
+  },
+  global: {
+    fetch: customFetch,
+    headers: { 'x-application-name': 'todo-app' },
+  },
+  realtime: {
+    timeout: 60000, // Increase timeout for realtime connections
+  },
+});
 
 // Database types
 export type Todo = {

@@ -1,15 +1,31 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTodoStore } from '@/app/store/todo-store';
 import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
 import { useAuth } from '@/app/context/auth-context';
+import { getUserTodoCount } from '@/utils/supabase';
 
 export function TodoForm() {
   const [title, setTitle] = useState('');
-  const { addTodo, error, isLoading, todoCount, getTodoLimitMessage } = useTodoStore();
+  const [userTodoCount, setUserTodoCount] = useState(0);
+  const { addTodo, error, isLoading, todoCount } = useTodoStore();
   const { user, isProUser } = useAuth();
+
+  // Fetch the user's todo count when the user changes
+  useEffect(() => {
+    const fetchUserTodoCount = async () => {
+      if (user) {
+        const count = await getUserTodoCount(user.id);
+        setUserTodoCount(count);
+      } else {
+        setUserTodoCount(todoCount);
+      }
+    };
+
+    fetchUserTodoCount().then(r => null);
+  }, [user, todoCount]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,6 +34,15 @@ export function TodoForm() {
     try {
       await addTodo(title.trim(), user?.id);
       setTitle('');
+
+      // Update the user's todo count after adding a todo
+      if (user) {
+        const count = await getUserTodoCount(user.id);
+        setUserTodoCount(count);
+      } else {
+        // For non-authenticated users, increment the count directly
+        setUserTodoCount(prevCount => prevCount + 1);
+      }
     } catch (error: any) {
       console.error('Error adding todo:', {
         message: error.message,
@@ -29,8 +54,22 @@ export function TodoForm() {
   };
 
   const isAtLimit = 
-    (!user && todoCount >= 3) || 
-    (user && !isProUser && todoCount >= 5);
+    (!user && userTodoCount >= 3) || 
+    (!!user && !isProUser && userTodoCount >= 5);
+
+  const getTodoLimitMessage = () => {
+    if (!user) {
+      const remaining = Math.max(0, 3 - userTodoCount);
+      return `You can create ${remaining} more todo${remaining === 1 ? '' : 's'} as an unregistered user.`;
+    }
+
+    if (!isProUser) {
+      const remaining = Math.max(0, 5 - userTodoCount);
+      return `You can create ${remaining} more todo${remaining === 1 ? '' : 's'} as a free user.`;
+    }
+
+    return 'You have unlimited todos as a PRO user.';
+  };
 
   return (
     <div className="mb-8">
@@ -57,7 +96,7 @@ export function TodoForm() {
       )}
 
       <p className="text-sm text-foreground/70 mt-2">
-        {getTodoLimitMessage(!!user, isProUser)}
+        {getTodoLimitMessage()}
       </p>
     </div>
   );

@@ -1,22 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
+import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import { stripe, createCheckoutSession, createCustomer } from '@/utils/stripe';
 
 export async function POST(req: NextRequest) {
   try {
     const cookieStore = cookies();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name: string) {
-            return cookieStore.get(name)?.value;
+    // Create a server-side Supabase client with appropriate configuration
+    const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+          auth: {
+            persistSession: false, // Don't persist session on server
+            autoRefreshToken: false, // No need to refresh token on server
           },
-        },
-      }
+          global: {
+            headers: { 'x-application-name': 'todo-app-server' },
+          },
+        }
     );
+
 
     // Get the current user
     const { data: { user } } = await supabase.auth.getUser();
@@ -37,7 +41,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Check if user already has a Stripe customer ID
+    // Check if the user already has a Stripe customer ID
     const { data: customer, error: customerError } = await supabase
       .from('customers')
       .select('stripe_customer_id')
