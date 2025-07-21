@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useAuth } from '@/app/context/auth-context';
 import { Button } from '@/app/components/ui/button';
 import { AuthModal } from '@/app/components/auth/auth-modal';
+import { supabase } from '@/utils/supabase';
 
 export function SubscriptionButton() {
   const { user, isProUser } = useAuth();
@@ -18,19 +19,28 @@ export function SubscriptionButton() {
 
     setIsLoading(true);
     try {
-      console.log('Client-side origin:', {
+      console.log('Client-side auth state:', {
+        user: user ? { id: user.id, email: user.email } : null,
+        isAuthenticated: !!user,
         origin: window.location.origin,
         href: window.location.href,
         pathname: window.location.pathname
       });
+
+      // Check if we have a valid session
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log('Current session:', session ? 'exists' : 'none');
+
       const response = await fetch('/api/create-checkout-session', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include', // This ensures cookies are sent with the request
         body: JSON.stringify({
           priceId: process.env.NEXT_PUBLIC_PRO_PRICE_ID,
           returnUrl: window.location.origin || 'http://localhost:3000',
+          userId: user.id, // Send the user ID for server-side verification
         }),
       });
 
